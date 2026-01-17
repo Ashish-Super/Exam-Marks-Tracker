@@ -157,8 +157,8 @@
             <input type="number" min="0" step="0.5" id="cs" required />
           </div>
           <div class="col">
-            <label for="tca">TCA (max 30 / 60 for periodic Test, excluded from %)</label>
-            <input type="number" min="0" step="0.5" id="tca" required />
+            <label for="tca">Extra Subject (max 30 / 60 for periodic Test, excluded from %)</label>
+            <input type="number" min="0" step="0.5" id="tca" />
           </div>
         </div>
         <div class="flex between" style="margin-top: 1rem; gap: .75rem;">
@@ -379,7 +379,7 @@
 
       // per-subject totals section
       const subjectFriendly = {
-        english: 'English', mathematics: 'Mathematics', chemistry: 'Chemistry', physics: 'Physics', cs: 'Computer Science', tca: 'TCA (excluded)'
+        english: 'English', mathematics: 'Mathematics', chemistry: 'Chemistry', physics: 'Physics', cs: 'Computer Science', tca: 'Extra Subject (excluded)'
       };
       const subjectTotalsEl = $('#subjectTotals');
       subjectTotalsEl.innerHTML = '';
@@ -399,7 +399,7 @@
     function renderBreakdownRows(exam) {
       const mult = TYPES[exam.type].multiplier;
       const labels = {
-        english: 'English', mathematics: 'Mathematics', chemistry: 'Chemistry', physics: 'Physics', cs: 'Computer Science', tca: 'TCA (excluded)'
+        english: 'English', mathematics: 'Mathematics', chemistry: 'Chemistry', physics: 'Physics', cs: 'Computer Science', tca: 'Extra Subject (excluded)'
       };
       return Object.keys(SUBJECTS).map(k => `
         <tr>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Marks Tracker (Unit Test & Periodic)</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --accent: #3b82f6;
+      --text: #222;
+      --muted: #6b7280;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: var(--card);
+      padding: 1.25rem 1rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      text-align: center;
+    }
+    h1 { margin: 0; font-size: 1.6rem; }
+    main { max-width: 1100px; margin: 0 auto; padding: 0 1rem 2rem; }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .col { flex: 1; min-width: 180px; }
+    label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: .25rem; }
+    input[type="number"], input[type="text"], input[type="date"], select {
+      width: 100%;
+      padding: .5rem .6rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+    button {
+      background: var(--accent);
+      border: 0;
+      color: #fff;
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .95rem;
+    }
+    button.secondary { background: #e5e7eb; color: #111; }
+    button.danger { background: var(--danger); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #e5e7eb;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    thead { background: #f3f4f6; }
+    th, td {
+      text-align: left;
+      padding: .55rem .6rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: .92rem;
+    }
+    tbody tr:last-child td { border-bottom: 0; }
+    .muted { color: var(--muted); font-size: .85rem; }
+    .flex { display: flex; align-items: center; gap: .5rem; }
+    .between { justify-content: space-between; }
+    .right { text-align: right; }
+    .hidden { display: none !important; }
+    .tag { display: inline-block; padding: 0 .4rem; border-radius: 999px; font-size: .75rem; color: #fff; }
+    .tag.unit { background: #10b981; }
+    .tag.periodic { background: #f59e0b; }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: .75rem;
+    }
+    .stat {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: .6rem .75rem;
+    }
+    .stat h4 { margin: 0 0 .2rem; font-size: .9rem; color: var(--muted); }
+    .stat .value { font-weight: 600; font-size: 1.1rem; }
+    @media print {
+      header, #formCard, #actions { display: none !important; }
+      body { background: #fff; }
+      .card { box-shadow: none; border: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Exam Marks Tracker (Unit Test & Periodic Test)</h1>
+    <p class="muted">Stores your exams in the browser. Export as PDF anytime.</p>
+  </header>
+  <main>
+    <!-- Add / Edit Exam Form -->
+    <section class="card" id="formCard">
+      <h2 id="formTitle">Add Exam</h2>
+      <form id="examForm">
+        <input type="hidden" id="editingId" value="" />
+        <div class="row">
+          <div class="col">
+            <label for="examName">Exam name</label>
+            <input type="text" id="examName" placeholder="e.g., Unit Test 1" required />
+          </div>
+          <div class="col">
+          <label for="examType">Exam Type</label>
+          <select id="examType" required>
+            <option value="UNIT">Unit Test</option>
+            <option value="PERIODIC">Periodic Test </option>
+          </select>
+          </div>
+          <div class="col">
+            <label for="examDate">Exam Start Date</label>
+            <input type="date" id="examDate" />
+          </div>
+        </div>
+
+        <h3 style="margin-top: 1rem;">Marks Obtained</h3>
+        <p class="muted">Enter the marks you scored (TCA will be stored but excluded from total & percentage).</p>
+        <div class="row">
+          <div class="col">
+            <label for="english">English (max 40 / 80 for periodic Test)</label>
+            <input type="number" min="0" step="0.5" id="english" required />
+          </div>
+          <div class="col">
+            <label for="mathematics">Mathematics (max 40 / 80 for periodic Test)</label>
+            <input type="number" min="0" step="0.5" id="mathematics" required />
+          </div>
+          <div class="col">
+            <label for="Economics">Economics (max 40 / 80 for periodic Test)</label>
+            <input type="number" min="0" step="0.5" id="Economics" required />
+          </div>
+          <div class="col">
+            <label for="Accountancy">Accountancy (max 40 / 80 for periodic Test)</label>
+            <input type="number" min="0" step="0.5" id="Accountancy" required />
+          </div>
+          <div class="col">
+            <label for="cs">Business Studies (max 40 / 80 for periodic Test)</label>
+            <input type="number" min="0" step="0.5" id="cs" required />
+          </div>
+          <div class="col">
+            <label for="tca">Extra Subject (max 30 / 60 for periodic Test, excluded from %)</label>
+            <input type="number" min="0" step="0.5" id="tca" />
+          </div>
+        </div>
+        <div class="flex between" style="margin-top: 1rem; gap: .75rem;">
+          <div class="flex" style="gap: .5rem;">
+            <button type="submit" id="submitBtn">Save exam</button>
+            <button type="button" class="secondary hidden" id="cancelEditBtn">Cancel edit</button>
+          </div>
+          <div class="flex" style="gap: .5rem;">
+            <button type="button" class="secondary" id="clearAllBtn" title="Delete everything from localStorage">Clear all data</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Actions -->
+    <section id="actions" class="card flex between" style="align-items: center;">
+      <div class="muted">Export and backup</div>
+      <div class="flex" style="gap: .5rem;">
+        <button type="button" id="exportPdfBtn">Export as PDF</button>
+        <button type="button" class="secondary" id="exportJsonBtn">Export JSON</button>
+        <button type="button" class="secondary" id="importJsonBtn">Import JSON</button>
+      </div>
+    </section>
+
+    <!-- Summary stats -->
+    <section class="card" id="overallCard">
+      <h2>Overall Summary</h2>
+      <div id="overallStats" class="totals-grid"></div>
+      <h3 style="margin-top:1rem;">Per-subject totals across all exams</h3>
+      <div id="subjectTotals" class="totals-grid"></div>
+    </section>
+
+    <!-- Exams list -->
+    <section class="card" id="report">
+      <h2>All Exams</h2>
+      <table id="examsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Start Date</th>
+            <th class="right">Total (excl. TCA)</th>
+            <th class="right">Max (excl. TCA)</th>
+            <th class="right">%</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="examsTbody">
+          <tr><td colspan="8" class="muted">No exams yet. Add one above.</td></tr>
+        </tbody>
+      </table>
+
+      <details style="margin-top: 1rem;">
+        <summary>Show marks breakdown per exam</summary>
+        <div id="breakdowns"></div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    // Configuration
+    const SUBJECTS = {
+      english: 40,
+      mathematics: 40,
+      Economics: 40,
+      Accountancy: 40,
+      cs: 40,
+      tca: 30 // excluded from total & percentage
+    };
+
+    const TYPES = {
+      UNIT: { label: 'Unit Test', multiplier: 1 },
+      PERIODIC: { label: 'Periodic', multiplier: 2 },
+    };
+
+    // Helpers
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+    const fmt = (n, digits = 2) => Number(n).toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: digits });
+
+    function loadExams() {
+      try {
+        return JSON.parse(localStorage.getItem('exams_v1') || '[]');
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    function saveExams(exams) {
+      localStorage.setItem('exams_v1', JSON.stringify(exams));
+    }
+
+    function getMaxMarks(type, includeTCA = false) {
+      const mult = TYPES[type].multiplier;
+      const keys = Object.keys(SUBJECTS).filter(k => includeTCA || k !== 'tca');
+      return keys.reduce((s, k) => s + SUBJECTS[k] * mult, 0);
+    }
+
+    function validateMarks(exam) {
+      const mult = TYPES[exam.type].multiplier;
+      const maxMap = {};
+      for (const k of Object.keys(SUBJECTS)) {
+        maxMap[k] = SUBJECTS[k] * mult;
+      }
+      const errors = [];
+      for (const key of Object.keys(SUBJECTS)) {
+        const v = Number(exam.marks[key]);
+        if (v < 0 || v > maxMap[key]) {
+          errors.push(`${key.toUpperCase()} must be between 0 and ${maxMap[key]}`);
+        }
+      }
+      return errors;
+    }
+
+    function computeTotals(exam) {
+      const keysMain = ['english', 'mathematics', 'Economics', 'Accountancy', 'cs'];
+      const mult = TYPES[exam.type].multiplier;
+      const maxMain = keysMain.reduce((s, k) => s + SUBJECTS[k] * mult, 0);
+      const obtainedMain = keysMain.reduce((s, k) => s + Number(exam.marks[k] || 0), 0);
+      const percentage = maxMain ? (obtainedMain / maxMain) * 100 : 0;
+      return { obtainedMain, maxMain, percentage };
+    }
+
+    function render() {
+      const exams = loadExams();
+      const tbody = $('#examsTbody');
+      const breakdowns = $('#breakdowns');
+      tbody.innerHTML = '';
+      breakdowns.innerHTML = '';
+
+      if (!exams.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="muted">No exams yet. Add one above.</td></tr>';
+        $('#overallStats').innerHTML = '';
+        $('#subjectTotals').innerHTML = '';
+        return;
+      }
+
+      let overallObtained = 0, overallMax = 0;
+      const perSubjectTotals = {
+        english: 0, mathematics: 0, Economics: 0, Accountancy: 0, cs: 0, tca: 0
+      };
+      const perSubjectMax = {
+        english: 0, mathematics: 0, Economics: 0, Accountancy: 0, cs: 0, tca: 0
+      };
+
+      exams.forEach((exam, idx) => {
+        const { obtainedMain, maxMain, percentage } = computeTotals(exam);
+        overallObtained += obtainedMain;
+        overallMax += maxMain;
+
+        // Per subject accumulate (include TCA here for its own total only)
+        const mult = TYPES[exam.type].multiplier;
+        for (const k of Object.keys(SUBJECTS)) {
+          perSubjectTotals[k] += Number(exam.marks[k] || 0);
+          perSubjectMax[k] += SUBJECTS[k] * mult;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(exam.name)}</td>
+          <td><span class="tag ${exam.type === 'UNIT' ? 'unit' : 'periodic'}">${TYPES[exam.type].label}</span></td>
+          <td>${exam.date || '-'}</td>
+          <td class="right">${fmt(obtainedMain)}</td>
+          <td class="right">${fmt(maxMain)}</td>
+          <td class="right">${fmt(percentage)}</td>
+          <td>
+            <button class="secondary" data-edit="${exam.id}">Edit</button>
+            <button class="danger" data-delete="${exam.id}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        const b = document.createElement('div');
+        b.className = 'card';
+        b.style.marginTop = '.75rem';
+        b.innerHTML = `
+          <h4>${escapeHtml(exam.name)} <span class="tag ${exam.type === 'UNIT' ? 'unit' : 'periodic'}">${TYPES[exam.type].label}</span></h4>
+          <p class="muted">Date: ${exam.date || '-'}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th class="right">Obtained</th>
+                <th class="right">Max</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${renderBreakdownRows(exam)}
+              <tr>
+                <th>Total (excl. TCA)</th>
+                <th class="right">${fmt(obtainedMain)}</th>
+                <th class="right">${fmt(maxMain)}</th>
+              </tr>
+              <tr>
+                <th>Percentage</th>
+                <th class="right">${fmt((obtainedMain/maxMain)*100)}</th>
+                <th></th>
+              </tr>
+            </tbody>
+          </table>
+        `;
+        breakdowns.appendChild(b);
+      });
+
+      tbody.querySelectorAll('button[data-edit]').forEach(btn => btn.addEventListener('click', onEdit));
+      tbody.querySelectorAll('button[data-delete]').forEach(btn => btn.addEventListener('click', onDelete));
+
+      // Overall summary
+      const overallPct = overallMax ? (overallObtained/overallMax)*100 : 0;
+      $('#overallStats').innerHTML = `
+        <div class="stat"><h4>Total obtained</h4><div class="value">${fmt(overallObtained)}</div></div>
+        <div class="stat"><h4>Total max</h4><div class="value">${fmt(overallMax)}</div></div>
+        <div class="stat"><h4>Average %</h4><div class="value">${fmt(overallPct)}</div></div>
+        <div class="stat"><h4># Exams</h4><div class="value">${exams.length}</div></div>
+      `;
+
+      // per-subject totals section
+      const subjectFriendly = {
+        english: 'English', mathematics: 'Mathematics', Economics: 'Economics', Accountancy: 'Accountancy', cs: 'Business Studies', tca: 'Extra Subject (excluded)'
+      };
+      const subjectTotalsEl = $('#subjectTotals');
+      subjectTotalsEl.innerHTML = '';
+      Object.keys(perSubjectTotals).forEach(k => {
+        const pct = perSubjectMax[k] ? (perSubjectTotals[k]/perSubjectMax[k])*100 : 0;
+        const div = document.createElement('div');
+        div.className = 'stat';
+        div.innerHTML = `
+          <h4>${subjectFriendly[k]}</h4>
+          <div class="value">${fmt(perSubjectTotals[k])} / ${fmt(perSubjectMax[k])}</div>
+          <div class="muted">${fmt(pct)}%</div>
+        `;
+        subjectTotalsEl.appendChild(div);
+      });
+    }
+
+    function renderBreakdownRows(exam) {
+      const mult = TYPES[exam.type].multiplier;
+      const labels = {
+        english: 'English', mathematics: 'Mathematics', Economics: 'Economics', Accountancy: 'Accountancy', cs: 'Business Studies', tca: 'Extra Subject (excluded)'
+      };
+      return Object.keys(SUBJECTS).map(k => `
+        <tr>
+          <td>${labels[k]}</td>
+          <td class="right">${fmt(exam.marks[k] || 0)}</td>
+          <td class="right">${fmt(SUBJECTS[k] * mult)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function onEdit(e) {
+      const id = e.target.getAttribute('data-edit');
+      const exams = loadExams();
+      const exam = exams.find(x => x.id === id);
+      if (!exam) return;
+
+      $('#formTitle').textContent = 'Edit Exam';
+      $('#submitBtn').textContent = 'Update exam';
+      $('#cancelEditBtn').classList.remove('hidden');
+      $('#editingId').value = exam.id;
+
+      $('#examName').value = exam.name;
+      $('#examType').value = exam.type;
+      $('#examDate').value = exam.date || '';
+      $('#english').value = exam.marks.english;
+      $('#mathematics').value = exam.marks.mathematics;
+      $('#Economics').value = exam.marks.Economics;
+      $('#Accountancy').value = exam.marks.Accountancy;
+      $('#cs').value = exam.marks.cs;
+      $('#tca').value = exam.marks.tca;
+    }
+
+    function onDelete(e) {
+      const id = e.target.getAttribute('data-delete');
+      if (!confirm('Delete this exam?')) return;
+      let exams = loadExams();
+      exams = exams.filter(x => x.id !== id);
+      saveExams(exams);
+      render();
+    }
+
+    function resetForm() {
+      $('#formTitle').textContent = 'Add Exam';
+      $('#submitBtn').textContent = 'Save exam';
+      $('#cancelEditBtn').classList.add('hidden');
+      $('#editingId').value = '';
+      $('#examForm').reset();
+    }
+
+    function uuid() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function escapeHtml(str) {
+      return (str + '').replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+    }
+
+    // PDF Export via window.print (simplest, works cross-platform)
+    function exportPdf() {
+      window.print();
+    }
+
+    function exportJson() {
+      const data = JSON.stringify(loadExams(), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'exam-marks-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJson() {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'application/json';
+      inp.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const exams = JSON.parse(ev.target.result);
+            if (!Array.isArray(exams)) throw new Error('Invalid data');
+            saveExams(exams);
+            render();
+            alert('Imported successfully.');
+          } catch (err) {
+            alert('Could not import JSON: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      });
+      inp.click();
+    }
+
+    function clearAll() {
+      if (!confirm('This will delete ALL stored exams. Continue?')) return;
+      localStorage.removeItem('exams_v1');
+      render();
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      render();
+
+      $('#examForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const exam = {
+          id: $('#editingId').value || uuid(),
+          name: $('#examName').value.trim(),
+          type: $('#examType').value,
+          date: $('#examDate').value,
+          marks: {
+            english: Number($('#english').value),
+            mathematics: Number($('#mathematics').value),
+            Economics: Number($('#Economics').value),
+            Accountancy: Number($('#Accountancy').value),
+            cs: Number($('#cs').value),
+            tca: Number($('#tca').value),
+          }
+        };
+
+        const errors = validateMarks(exam);
+        if (errors.length) {
+          alert(errors.join('\n'));
+          return;
+        }
+
+        const exams = loadExams();
+        const idx = exams.findIndex(x => x.id === exam.id);
+        if (idx >= 0) {
+          exams[idx] = exam;
+        } else {
+          exams.push(exam);
+        }
+        saveExams(exams);
+        resetForm();
+        render();
+      });
+
+      $('#cancelEditBtn').addEventListener('click', resetForm);
+      $('#exportPdfBtn').addEventListener('click', exportPdf);
+      $('#exportJsonBtn').addEventListener('click', exportJson);
+      $('#importJsonBtn').addEventListener('click', importJson);
+      $('#clearAllBtn').addEventListener('click', clearAll);
+    });
+  </script>
+</body>
+</html>
